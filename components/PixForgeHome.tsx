@@ -388,7 +388,7 @@ export const PixForgeHome = (): JSX.Element => {
                     {/* Resized Image Preview */}
                     <div className="flex-1">
                       <p className="text-xs font-medium text-gray-500 mb-2 uppercase tracking-wider">
-                        {isOpenCVLoaded ? "Live Preview (OpenCV.js)" : "Resized"}
+                        {isOpenCVLoaded ? "Live Preview" : "Resized"}
                       </p>
                       <div className="border border-gray-100 rounded-lg overflow-hidden h-64 flex items-center justify-center bg-gray-50">
                         {isResizing ? (
