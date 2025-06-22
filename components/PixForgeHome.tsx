@@ -59,15 +59,40 @@ export const PixForgeHome = (): JSX.Element => {
   const pageDescription = "Resize your images online for free. No registration required, no watermarks. Support for JPG, PNG, and WebP formats with custom dimensions or percentage scaling.";
   const keywords = "image resizer, resize image online, free image resizer, photo resizer, resize pictures, image size converter";
 
-  // Cleanup function to remove uploaded files when component unmounts
+  // Cleanup function to remove uploaded files when component unmounts or page refreshes
   useEffect(() => {
-    return () => {
-      // Cleanup when component unmounts
+    // Function to clean up files
+    const cleanupFiles = async () => {
       if (uploadedFile || resizedFile) {
-        fetch('/api/cleanup', {
-          method: 'POST',
-        }).catch(err => console.error('Failed to clean up files:', err));
+        try {
+          await fetch('/api/cleanup', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              uploadedFile: uploadedFile?.fileName,
+              resizedFile: resizedFile?.resizedFileName
+            }),
+          });
+          console.log('Files cleaned up successfully');
+        } catch (err) {
+          console.error('Failed to clean up files:', err);
+        }
       }
+    };
+
+    // Add event listeners for page unload
+    const handleBeforeUnload = () => {
+      cleanupFiles();
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    // Cleanup when component unmounts
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      cleanupFiles();
     };
   }, [uploadedFile, resizedFile]);
 
