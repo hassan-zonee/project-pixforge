@@ -4,17 +4,19 @@ const nextConfig = {
   // Increase memory limit for Node.js
   experimental: {
     // Reduce the size of the build traces
-    outputFileTracingIgnores: [
-      // Ignore node_modules
-      'node_modules/**/*',
-      // Ignore test files
-      '**/*.test.*',
-      '**/*.spec.*',
-      // Ignore development files
-      '.git/**',
-      '.github/**',
-      '.vscode/**'
-    ],
+    outputFileTracingExcludes: {
+      '*': [
+        // Ignore node_modules
+        'node_modules/**/*',
+        // Ignore test files
+        '**/*.test.*',
+        '**/*.spec.*',
+        // Ignore development files
+        '.git/**',
+        '.github/**',
+        '.vscode/**'
+      ]
+    },
     // Optimize memory usage
     memoryBasedWorkersCount: true,
   },

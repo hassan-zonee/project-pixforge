@@ -235,40 +235,55 @@ export const PixForgeHome = (): JSX.Element => {
     setError(null);
     
     try {
-      const requestData = {
-        fileName: uploadedFile.fileName,
-        fileData: preview,
-        fileType: uploadedFile.fileType,
-        resizeType,
-        width: width,
-        height: height,
-        percentage: percentage,
-      };
-      
-      const response = await fetch('/api/resize', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestData),
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to resize image');
+      // Since we can't use server-side Sharp in Edge Runtime,
+      // we'll use the client-side preview directly
+      if (isOpenCVLoaded && clientResizedPreview) {
+        // If OpenCV is loaded and we have a client-side preview, use that
+        setResizedPreview(clientResizedPreview);
+        setResizedFile({
+          resizedFileName: `resized_${uploadedFile.fileName}`,
+          originalName: uploadedFile.originalName,
+          resizedData: clientResizedPreview,
+          width,
+          height
+        });
+      } else {
+        // Fallback to API
+        const requestData = {
+          fileName: uploadedFile.fileName,
+          fileData: preview,
+          fileType: uploadedFile.fileType,
+          resizeType,
+          width: width,
+          height: height,
+          percentage: percentage,
+        };
+        
+        const response = await fetch('/api/resize', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(requestData),
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to resize image');
+        }
+        
+        const data = await response.json();
+        setResizedFile(data);
+        
+        // Set the resized image preview directly from the response data
+        setResizedPreview(data.resizedData);
       }
-      
-      const data = await response.json();
-      setResizedFile(data);
-      
-      // Set the resized image preview directly from the response data
-      setResizedPreview(data.resizedData);
     } catch (err: any) {
       setError(err.message || 'Failed to resize image');
     } finally {
       setIsResizing(false);
     }
-  }, [uploadedFile, preview, resizeType, width, height, percentage]);
+  }, [uploadedFile, preview, resizeType, width, height, percentage, isOpenCVLoaded, clientResizedPreview]);
 
   // Handle download
   const handleDownload = useCallback(() => {
