@@ -1,0 +1,10 @@
+# Allow all crawlers
+User-agent: *
+Allow: /
+
+# Disallow temporary files
+Disallow: /uploads/
+Disallow: /resized/
+
+# Sitemap
+Sitemap: https://pixforge.com/sitemap.xml 

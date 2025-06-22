@@ -1,9 +1,8 @@
 {
-  "/not-found": "app/not-found.js",
   "/page": "app/page.js",
+  "/api/cleanup/route": "app/api/cleanup/route.js",
   "/favicon.ico/route": "app/favicon.ico/route.js",
   "/api/upload/route": "app/api/upload/route.js",
-  "/api/cleanup/route": "app/api/cleanup/route.js",
   "/api/resize/route": "app/api/resize/route.js",
-  "/api/resized/[...path]/route": "app/api/resized/[...path]/route.js"
+  "/api/download/[fileName]/route": "app/api/download/[fileName]/route.js"
 }

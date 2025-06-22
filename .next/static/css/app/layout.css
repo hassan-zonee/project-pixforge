@@ -959,6 +959,26 @@ video {
   .upload-area:hover {
     background-color: rgba(59, 130, 246, 0.05);
   }
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+.absolute {
+  position: absolute;
+}
+.relative {
+  position: relative;
+}
+.inset-0 {
+  inset: 0px;
+}
 .mx-auto {
   margin-left: auto;
   margin-right: auto;
@@ -990,6 +1010,12 @@ video {
 .mt-1 {
   margin-top: 0.25rem;
 }
+.mt-12 {
+  margin-top: 3rem;
+}
+.mt-6 {
+  margin-top: 1.5rem;
+}
 .block {
   display: block;
 }
@@ -1020,6 +1046,9 @@ video {
 .h-64 {
   height: 16rem;
 }
+.h-full {
+  height: 100%;
+}
 .max-h-full {
   max-height: 100%;
 }
@@ -1047,6 +1076,9 @@ video {
 .max-w-screen-xl {
   max-width: 1280px;
 }
+.max-w-none {
+  max-width: none;
+}
 .flex-1 {
   flex: 1 1 0%;
 }
@@ -1064,6 +1096,9 @@ video {
 }
 .resize {
   resize: both;
+}
+.list-disc {
+  list-style-type: disc;
 }
 .appearance-none {
   -webkit-appearance: none;
@@ -1108,6 +1143,9 @@ video {
 .rounded-xl {
   border-radius: 0.75rem;
 }
+.rounded {
+  border-radius: 0.25rem;
+}
 .border {
   border-width: 1px;
 }
@@ -1131,6 +1169,14 @@ video {
 .border-red-200 {
   --tw-border-opacity: 1;
   border-color: rgb(254 202 202 / var(--tw-border-opacity, 1));
+}
+.border-blue-200 {
+  --tw-border-opacity: 1;
+  border-color: rgb(191 219 254 / var(--tw-border-opacity, 1));
+}
+.border-gray-300 {
+  --tw-border-opacity: 1;
+  border-color: rgb(209 213 219 / var(--tw-border-opacity, 1));
 }
 .bg-blue-500 {
   --tw-bg-opacity: 1;
@@ -1162,6 +1208,13 @@ video {
 .bg-white {
   --tw-bg-opacity: 1;
   background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1));
+}
+.bg-blue-50 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(239 246 255 / var(--tw-bg-opacity, 1));
+}
+.bg-opacity-75 {
+  --tw-bg-opacity: 0.75;
 }
 .object-contain {
   -o-object-fit: contain;
@@ -1211,6 +1264,9 @@ video {
 }
 .pt-5 {
   padding-top: 1.25rem;
+}
+.pl-5 {
+  padding-left: 1.25rem;
 }
 .text-center {
   text-align: center;
@@ -1303,6 +1359,14 @@ video {
 .text-white {
   --tw-text-opacity: 1;
   color: rgb(255 255 255 / var(--tw-text-opacity, 1));
+}
+.text-red-500 {
+  --tw-text-opacity: 1;
+  color: rgb(239 68 68 / var(--tw-text-opacity, 1));
+}
+.text-blue-700 {
+  --tw-text-opacity: 1;
+  color: rgb(29 78 216 / var(--tw-text-opacity, 1));
 }
 .accent-blue-500 {
   accent-color: #3b82f6;

@@ -9,6 +9,8 @@ import {
   CardTitle,
   CardFooter,
 } from "./ui/card";
+import { ClientResizer } from "./ClientResizer";
+import { useOpenCV } from "./OpenCVProvider";
 
 type UploadedFile = {
   fileId: string;
@@ -27,6 +29,9 @@ type ResizedFile = {
 type ResizeType = "ratio" | "percentage";
 
 export const PixForgeHome = (): JSX.Element => {
+  // OpenCV loading state
+  const { isOpenCVLoaded } = useOpenCV();
+
   // State for file upload and processing
   const [file, setFile] = useState<File | null>(null);
   const [uploadedFile, setUploadedFile] = useState<UploadedFile | null>(null);
@@ -36,39 +41,23 @@ export const PixForgeHome = (): JSX.Element => {
   const [error, setError] = useState<string | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [resizedPreview, setResizedPreview] = useState<string | null>(null);
+  const [clientResizedPreview, setClientResizedPreview] = useState<string | null>(null);
 
   // State for resize options
   const [resizeType, setResizeType] = useState<ResizeType>("ratio");
   const [width, setWidth] = useState<number>(0);
   const [height, setHeight] = useState<number>(0);
   const [percentage, setPercentage] = useState<number>(50);
+  const [aspectRatio, setAspectRatio] = useState<number>(1);
+  const [maintainAspectRatio, setMaintainAspectRatio] = useState<boolean>(true);
 
   // File input ref
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // File format data for the supported formats
-  const fileFormats = [
-    {
-      id: "jpg",
-      name: "JPG",
-      icon: "/file.svg",
-    },
-    {
-      id: "png",
-      name: "PNG",
-      icon: "/file.svg",
-    },
-    {
-      id: "webp",
-      name: "WEBP",
-      icon: "/file.svg",
-    },
-    {
-      id: "size",
-      name: "Max size: 10MB",
-      icon: "/file.svg",
-    },
-  ];
+  // SEO-friendly metadata
+  const pageTitle = "Free Online Image Resizer | Resize JPG, PNG, WebP Images Easily";
+  const pageDescription = "Resize your images online for free. No registration required, no watermarks. Support for JPG, PNG, and WebP formats with custom dimensions or percentage scaling.";
+  const keywords = "image resizer, resize image online, free image resizer, photo resizer, resize pictures, image size converter";
 
   // Cleanup function to remove uploaded files when component unmounts
   useEffect(() => {
@@ -89,11 +78,12 @@ export const PixForgeHome = (): JSX.Element => {
     setUploadedFile(null);
     setResizedFile(null);
     setResizedPreview(null);
+    setClientResizedPreview(null);
     
     // Validate file type
     const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
     if (!validTypes.includes(selectedFile.type)) {
-      setError('Invalid file type. Only JPG, PNG, and WEBP are supported');
+      setError('Invalid file type. Only JPG, PNG, and WebP are supported');
       return;
     }
     
@@ -168,12 +158,15 @@ export const PixForgeHome = (): JSX.Element => {
       const data = await response.json();
       setUploadedFile(data);
       
-      // Set initial width and height if we have an image preview
+      // Set initial width and height to match the original image dimensions
       if (preview) {
         const img = document.createElement('img');
         img.onload = () => {
+          // Set the width and height to the original image dimensions
           setWidth(img.width);
           setHeight(img.height);
+          // Calculate and store the aspect ratio
+          setAspectRatio(img.width / img.height);
         };
         img.src = preview;
       }
@@ -183,6 +176,29 @@ export const PixForgeHome = (): JSX.Element => {
       setIsUploading(false);
     }
   }, [preview]);
+
+  // Handle width change with aspect ratio maintenance
+  const handleWidthChange = useCallback((newWidth: number) => {
+    setWidth(newWidth);
+    if (maintainAspectRatio && aspectRatio) {
+      // Calculate new height based on aspect ratio
+      setHeight(Math.round(newWidth / aspectRatio));
+    }
+  }, [maintainAspectRatio, aspectRatio]);
+
+  // Handle height change with aspect ratio maintenance
+  const handleHeightChange = useCallback((newHeight: number) => {
+    setHeight(newHeight);
+    if (maintainAspectRatio && aspectRatio) {
+      // Calculate new width based on aspect ratio
+      setWidth(Math.round(newHeight * aspectRatio));
+    }
+  }, [maintainAspectRatio, aspectRatio]);
+
+  // Handle client-side preview generation
+  const handlePreviewGenerated = useCallback((dataUrl: string | null) => {
+    setClientResizedPreview(dataUrl);
+  }, []);
 
   // Resize the image
   const handleResize = useCallback(async () => {
@@ -256,12 +272,23 @@ export const PixForgeHome = (): JSX.Element => {
         <div className="max-w-4xl w-full mx-auto">
           <div className="mb-8 text-center">
             <h2 className="text-2xl md:text-3xl font-poppins font-semibold text-gray-800 mb-2">
-              Transform Your Images
+              Free Online Image Resizer
             </h2>
             <p className="text-base text-gray-600 font-body">
-              Simple yet powerful image resizing at your fingertips
+              Resize JPG, PNG, and WebP images with OpenCV-powered precision
             </p>
           </div>
+
+          {/* OpenCV Loading Status */}
+          {!isOpenCVLoaded && (
+            <div className="mb-6 p-3 bg-blue-50 border border-blue-200 text-blue-700 rounded-lg text-sm flex items-center">
+              <svg className="animate-spin h-4 w-4 text-blue-500 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Loading OpenCV.js for advanced image processing...
+            </div>
+          )}
 
           {/* Error message */}
           {error && (
@@ -335,7 +362,9 @@ export const PixForgeHome = (): JSX.Element => {
                     
                     {/* Resized Image Preview */}
                     <div className="flex-1">
-                      <p className="text-xs font-medium text-gray-500 mb-2 uppercase tracking-wider">Resized</p>
+                      <p className="text-xs font-medium text-gray-500 mb-2 uppercase tracking-wider">
+                        {isOpenCVLoaded ? "Live Preview (OpenCV.js)" : "Resized"}
+                      </p>
                       <div className="border border-gray-100 rounded-lg overflow-hidden h-64 flex items-center justify-center bg-gray-50">
                         {isResizing ? (
                           <div className="flex flex-col items-center">
@@ -344,6 +373,17 @@ export const PixForgeHome = (): JSX.Element => {
                               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                             </svg>
                             <p className="text-sm text-gray-500">Processing...</p>
+                          </div>
+                        ) : isOpenCVLoaded && preview ? (
+                          <div className="relative w-full h-full">
+                            <ClientResizer
+                              imageUrl={preview}
+                              width={width}
+                              height={height}
+                              percentage={percentage}
+                              resizeType={resizeType}
+                              onPreviewGenerated={handlePreviewGenerated}
+                            />
                           </div>
                         ) : resizedPreview ? (
                           <Image 
@@ -394,6 +434,18 @@ export const PixForgeHome = (): JSX.Element => {
                   {/* Resize Controls */}
                   {resizeType === 'ratio' ? (
                     <div className="mb-6">
+                      <div className="flex items-center mb-3">
+                        <input
+                          type="checkbox"
+                          id="maintainAspectRatio"
+                          checked={maintainAspectRatio}
+                          onChange={(e) => setMaintainAspectRatio(e.target.checked)}
+                          className="mr-2 h-4 w-4 text-blue-500 focus:ring-blue-500 border-gray-300 rounded"
+                        />
+                        <label htmlFor="maintainAspectRatio" className="text-sm text-gray-700">
+                          Maintain aspect ratio
+                        </label>
+                      </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                           <label htmlFor="width" className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">
@@ -404,7 +456,7 @@ export const PixForgeHome = (): JSX.Element => {
                             id="width"
                             min="1"
                             value={width}
-                            onChange={(e) => setWidth(parseInt(e.target.value) || 0)}
+                            onChange={(e) => handleWidthChange(parseInt(e.target.value) || 0)}
                             className="w-full px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           />
                         </div>
@@ -417,7 +469,7 @@ export const PixForgeHome = (): JSX.Element => {
                             id="height"
                             min="1"
                             value={height}
-                            onChange={(e) => setHeight(parseInt(e.target.value) || 0)}
+                            onChange={(e) => handleHeightChange(parseInt(e.target.value) || 0)}
                             className="w-full px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           />
                         </div>
@@ -452,7 +504,7 @@ export const PixForgeHome = (): JSX.Element => {
                   disabled={isResizing}
                   className="w-full py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-blue-300 transition-colors font-medium text-sm"
                 >
-                  {isResizing ? 'Processing...' : 'Resize Image'}
+                  {isResizing ? 'Processing...' : 'Resize Image with OpenCV'}
                 </button>
               </CardFooter>
             </Card>
@@ -486,6 +538,32 @@ export const PixForgeHome = (): JSX.Element => {
               </CardFooter>
             </Card>
           )}
+
+          {/* SEO Content */}
+          <div className="mt-12 prose prose-sm max-w-none">
+            <h2 className="text-xl font-semibold text-gray-800 mb-4">About Our Free Image Resizer Tool</h2>
+            <p className="text-gray-600">
+              PixForge offers a powerful, free online image resizer that uses OpenCV technology for high-quality image resizing. 
+              Whether you need to resize images for social media, websites, or print, our tool makes it quick and easy.
+            </p>
+            
+            <h3 className="text-lg font-semibold text-gray-800 mt-6 mb-2">Key Features</h3>
+            <ul className="list-disc pl-5 text-gray-600">
+              <li><strong>OpenCV-Powered:</strong> Professional-grade image processing for the best quality results</li>
+              <li><strong>Multiple Formats:</strong> Support for JPG, PNG, and WebP images</li>
+              <li><strong>Custom Dimensions:</strong> Resize to exact pixel dimensions or by percentage</li>
+              <li><strong>Real-time Preview:</strong> See your resized image before downloading</li>
+              <li><strong>Free to Use:</strong> No registration, no watermarks, no limits</li>
+              <li><strong>Privacy-Focused:</strong> Your images are automatically deleted after processing</li>
+            </ul>
+            
+            <h3 className="text-lg font-semibold text-gray-800 mt-6 mb-2">Why Resize Images?</h3>
+            <p className="text-gray-600">
+              Resizing images is essential for optimizing website performance, meeting social media platform requirements, 
+              reducing file sizes for email attachments, or preparing images for print. Our tool helps you achieve the 
+              perfect dimensions without losing image quality.
+            </p>
+          </div>
         </div>
       </main>
 
