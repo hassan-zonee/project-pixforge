@@ -239,12 +239,12 @@ export const PixForgeHome = (): JSX.Element => {
   }, [resizedFile]);
 
   return (
-    <div className="flex flex-col min-h-screen items-start relative bg-[#f9fafa]">
+    <div className="flex flex-col min-h-screen bg-white">
       {/* Header */}
-      <header className="w-full h-16 flex items-center px-20 py-4 bg-white shadow-[0px_1px_2px_#0000000d]">
+      <header className="w-full py-4 bg-white border-b border-gray-100">
         <div className="max-w-screen-xl w-full mx-auto px-4">
           <div className="flex items-center justify-center">
-            <h1 className="text-2xl leading-8 [font-family:'Pacifico',Helvetica] font-normal text-[#3b81f5] text-center tracking-[0]">
+            <h1 className="text-2xl md:text-3xl font-montserrat font-semibold app-title">
               PixForge
             </h1>
           </div>
@@ -252,282 +252,253 @@ export const PixForgeHome = (): JSX.Element => {
       </header>
 
       {/* Main Content */}
-      <main className="w-full px-4 md:px-8 lg:px-36 py-0">
-        <div className="max-w-6xl w-full mx-auto px-4 py-8">
-          <div className="pb-8">
-            <div className="w-full">
-              {/* Page Title */}
-              <div className="pb-2">
-                <h2 className="text-3xl font-semibold text-gray-800 [font-family:'Roboto',Helvetica] leading-9">
-                  Transform Your Images
-                </h2>
-              </div>
+      <main className="w-full flex-1 px-4 md:px-8 lg:px-16 py-8 bg-gray-50">
+        <div className="max-w-4xl w-full mx-auto">
+          <div className="mb-8 text-center">
+            <h2 className="text-2xl md:text-3xl font-poppins font-semibold text-gray-800 mb-2">
+              Transform Your Images
+            </h2>
+            <p className="text-base text-gray-600 font-body">
+              Simple yet powerful image resizing at your fingertips
+            </p>
+          </div>
 
-              {/* Page Subtitle */}
-              <div className="pb-6">
-                <p className="text-base font-normal text-[#4a5462] [font-family:'Roboto',Helvetica] leading-6">
-                  Simple yet powerful image processing tools at your fingertips
-                </p>
-              </div>
+          {/* Error message */}
+          {error && (
+            <div className="mb-6 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
+              {error}
+            </div>
+          )}
 
-              {/* Error message */}
-              {error && (
-                <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
-                  {error}
+          {/* Upload Card */}
+          <Card className="w-full mb-6 bg-white border-0 rounded-xl card-shadow overflow-hidden">
+            <CardHeader className="pb-2 pt-5 px-6">
+              <CardTitle className="text-lg font-poppins text-gray-800">
+                Upload Image
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="px-6 pb-5">
+              {/* Upload Area */}
+              {!uploadedFile ? (
+                <div 
+                  className="flex flex-col items-center justify-center w-full h-48 mb-4 rounded-lg cursor-pointer upload-area bg-gray-50 hover:bg-blue-50/30 transition-colors"
+                  onClick={handleUploadClick}
+                  onDrop={handleDrop}
+                  onDragOver={handleDragOver}
+                >
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    className="hidden"
+                    accept="image/jpeg,image/png,image/webp"
+                    onChange={handleFileInputChange}
+                  />
+                  <div className="mb-3">
+                    <div className="w-12 h-12 flex items-center justify-center text-blue-500">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="17 8 12 3 7 8"></polyline>
+                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                      </svg>
+                    </div>
+                  </div>
+                  <div className="mb-1">
+                    <p className="text-sm font-medium text-gray-700">
+                      {isUploading ? 'Uploading...' : 'Drag & Drop your image here or Click to Browse'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500">
+                      Supported formats: JPG, PNG, WEBP (Max 10MB)
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="mb-4">
+                  <div className="flex flex-col md:flex-row gap-4">
+                    {/* Original Image Preview */}
+                    <div className="flex-1">
+                      <p className="text-xs font-medium text-gray-500 mb-2 uppercase tracking-wider">Original</p>
+                      <div className="border border-gray-100 rounded-lg overflow-hidden h-64 flex items-center justify-center bg-gray-50">
+                        {preview && (
+                          <Image 
+                            src={preview} 
+                            alt="Original" 
+                            width={500} 
+                            height={500} 
+                            className="max-w-full max-h-full object-contain"
+                            unoptimized
+                          />
+                        )}
+                      </div>
+                    </div>
+                    
+                    {/* Resized Image Preview */}
+                    <div className="flex-1">
+                      <p className="text-xs font-medium text-gray-500 mb-2 uppercase tracking-wider">Resized</p>
+                      <div className="border border-gray-100 rounded-lg overflow-hidden h-64 flex items-center justify-center bg-gray-50">
+                        {isResizing ? (
+                          <div className="flex flex-col items-center">
+                            <svg className="animate-spin h-6 w-6 text-blue-500 mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <p className="text-sm text-gray-500">Processing...</p>
+                          </div>
+                        ) : resizedPreview ? (
+                          <Image 
+                            src={resizedPreview} 
+                            alt="Resized" 
+                            width={500} 
+                            height={500} 
+                            className="max-w-full max-h-full object-contain"
+                            unoptimized
+                          />
+                        ) : (
+                          <p className="text-sm text-gray-400">Resize to see preview</p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
                 </div>
               )}
+            </CardContent>
+          </Card>
 
-              {/* Upload Card */}
-              <Card className="w-full mb-8 p-6 rounded-2xl shadow-[0px_4px_6px_-1px_#0000001a,0px_2px_4px_-2px_#0000001a]">
-                <CardHeader className="p-0 pb-4">
-                  <CardTitle className="text-xl font-semibold text-gray-800 [font-family:'Roboto',Helvetica] leading-7">
-                    Upload Image
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="p-0">
-                  {/* Upload Area */}
-                  {!uploadedFile ? (
-                    <div 
-                      className="flex flex-col items-center justify-center w-full h-48 p-0.5 mb-4 rounded-2xl border-2 border-dashed border-slate-300 cursor-pointer"
-                      onClick={handleUploadClick}
-                      onDrop={handleDrop}
-                      onDragOver={handleDragOver}
+          {/* Resize Options Card */}
+          {uploadedFile && (
+            <Card className="w-full mb-6 bg-white border-0 rounded-xl card-shadow overflow-hidden">
+              <CardHeader className="pb-2 pt-5 px-6">
+                <CardTitle className="text-lg font-poppins text-gray-800">
+                  Resize Options
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="px-6 pb-5">
+                {/* Resize Type Selection */}
+                <div className="mb-6">
+                  <div className="flex gap-3 mb-5">
+                    <button
+                      className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${resizeType === 'ratio' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+                      onClick={() => setResizeType('ratio')}
                     >
-                      <input
-                        type="file"
-                        ref={fileInputRef}
-                        className="hidden"
-                        accept="image/jpeg,image/png,image/webp"
-                        onChange={handleFileInputChange}
-                      />
-                      <div className="pb-2">
-                        <div className="w-12 h-12 flex items-center justify-center">
-                          <Image
-                            className="w-8 h-8"
-                            alt="Upload icon"
-                            src="/file.svg"
-                            width={32}
-                            height={32}
+                      Custom Dimensions
+                    </button>
+                    <button
+                      className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${resizeType === 'percentage' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+                      onClick={() => setResizeType('percentage')}
+                    >
+                      Percentage
+                    </button>
+                  </div>
+
+                  {/* Resize Controls */}
+                  {resizeType === 'ratio' ? (
+                    <div className="mb-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label htmlFor="width" className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">
+                            Width (px)
+                          </label>
+                          <input
+                            type="number"
+                            id="width"
+                            min="1"
+                            value={width}
+                            onChange={(e) => setWidth(parseInt(e.target.value) || 0)}
+                            className="w-full px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          />
+                        </div>
+                        <div>
+                          <label htmlFor="height" className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">
+                            Height (px)
+                          </label>
+                          <input
+                            type="number"
+                            id="height"
+                            min="1"
+                            value={height}
+                            onChange={(e) => setHeight(parseInt(e.target.value) || 0)}
+                            className="w-full px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           />
                         </div>
                       </div>
-                      <div className="pb-2">
-                        <p className="text-base font-normal text-[#6a7280] [font-family:'Roboto',Helvetica] leading-6">
-                          {isUploading ? 'Uploading...' : 'Drag & Drop your image here or Click to Browse'}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-sm font-normal text-gray-400 [font-family:'Roboto',Helvetica] leading-5">
-                          Supported formats: JPG, PNG, WEBP
-                        </p>
-                      </div>
                     </div>
                   ) : (
-                    <div className="mb-4">
-                      <div className="flex flex-col md:flex-row gap-4">
-                        {/* Original Image Preview */}
-                        <div className="flex-1">
-                          <p className="text-sm font-medium text-gray-700 mb-2">Original Image</p>
-                          <div className="border rounded-lg overflow-hidden h-64 flex items-center justify-center bg-gray-100">
-                            {preview && (
-                              <Image 
-                                src={preview} 
-                                alt="Original" 
-                                width={500} 
-                                height={500} 
-                                className="max-w-full max-h-full object-contain"
-                                unoptimized
-                              />
-                            )}
-                          </div>
-                        </div>
-                        
-                        {/* Resized Image Preview */}
-                        <div className="flex-1">
-                          <p className="text-sm font-medium text-gray-700 mb-2">Resized Image</p>
-                          <div className="border rounded-lg overflow-hidden h-64 flex items-center justify-center bg-gray-100">
-                            {isResizing ? (
-                              <p>Processing...</p>
-                            ) : resizedPreview ? (
-                              <Image 
-                                src={resizedPreview} 
-                                alt="Resized" 
-                                width={500} 
-                                height={500} 
-                                className="max-w-full max-h-full object-contain"
-                                unoptimized
-                              />
-                            ) : (
-                              <p className="text-gray-400">Resize to see preview</p>
-                            )}
-                          </div>
-                        </div>
+                    <div className="mb-6">
+                      <label htmlFor="percentage" className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">
+                        Percentage: {percentage}%
+                      </label>
+                      <input
+                        type="range"
+                        id="percentage"
+                        min="10"
+                        max="100"
+                        value={percentage}
+                        onChange={(e) => setPercentage(parseInt(e.target.value))}
+                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-500"
+                      />
+                      <div className="flex justify-between text-xs text-gray-400 mt-1">
+                        <span>10%</span>
+                        <span>50%</span>
+                        <span>100%</span>
                       </div>
                     </div>
                   )}
+                </div>
+              </CardContent>
+              <CardFooter className="px-6 pb-5 pt-0">
+                <button
+                  onClick={handleResize}
+                  disabled={isResizing}
+                  className="w-full py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-blue-300 transition-colors font-medium text-sm"
+                >
+                  {isResizing ? 'Processing...' : 'Resize Image'}
+                </button>
+              </CardFooter>
+            </Card>
+          )}
 
-                  {/* File Format Information */}
-                  <div className="flex flex-wrap items-center justify-center gap-4">
-                    {fileFormats.map((format) => (
-                      <div key={format.id} className="flex items-center">
-                        <div className="pr-1">
-                          <div className="w-6 h-6 flex items-center justify-center">
-                            <Image
-                              className="w-4 h-4"
-                              alt={`${format.name} icon`}
-                              src={format.icon}
-                              width={16}
-                              height={16}
-                            />
-                          </div>
-                        </div>
-                        <span className="text-sm font-normal text-[#6a7280] [font-family:'Roboto',Helvetica] leading-5">
-                          {format.name}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Resize Options Card */}
-              {uploadedFile && (
-                <Card className="w-full mb-8 p-6 rounded-2xl shadow-[0px_4px_6px_-1px_#0000001a,0px_2px_4px_-2px_#0000001a]">
-                  <CardHeader className="p-0 pb-4">
-                    <CardTitle className="text-xl font-semibold text-gray-800 [font-family:'Roboto',Helvetica] leading-7">
-                      Resize Options
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="p-0">
-                    {/* Resize Type Selection */}
-                    <div className="mb-6">
-                      <p className="text-sm font-medium text-gray-700 mb-2">Resize Method</p>
-                      <div className="flex gap-4">
-                        <button
-                          className={`px-4 py-2 rounded-md ${resizeType === 'ratio' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`}
-                          onClick={() => setResizeType('ratio')}
-                        >
-                          Custom Dimensions
-                        </button>
-                        <button
-                          className={`px-4 py-2 rounded-md ${resizeType === 'percentage' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`}
-                          onClick={() => setResizeType('percentage')}
-                        >
-                          Percentage
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Resize Controls */}
-                    {resizeType === 'ratio' ? (
-                      <div className="mb-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div>
-                            <label htmlFor="width" className="block text-sm font-medium text-gray-700 mb-1">
-                              Width (px)
-                            </label>
-                            <input
-                              type="number"
-                              id="width"
-                              min="1"
-                              value={width}
-                              onChange={(e) => setWidth(parseInt(e.target.value) || 0)}
-                              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            />
-                          </div>
-                          <div>
-                            <label htmlFor="height" className="block text-sm font-medium text-gray-700 mb-1">
-                              Height (px)
-                            </label>
-                            <input
-                              type="number"
-                              id="height"
-                              min="1"
-                              value={height}
-                              onChange={(e) => setHeight(parseInt(e.target.value) || 0)}
-                              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="mb-6">
-                        <label htmlFor="percentage" className="block text-sm font-medium text-gray-700 mb-1">
-                          Percentage: {percentage}%
-                        </label>
-                        <input
-                          type="range"
-                          id="percentage"
-                          min="10"
-                          max="100"
-                          value={percentage}
-                          onChange={(e) => setPercentage(parseInt(e.target.value))}
-                          className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-                        />
-                        <div className="flex justify-between text-xs text-gray-500 mt-1">
-                          <span>10%</span>
-                          <span>50%</span>
-                          <span>100%</span>
-                        </div>
-                      </div>
-                    )}
-                  </CardContent>
-                  <CardFooter className="p-0 pt-4">
-                    <button
-                      onClick={handleResize}
-                      disabled={isResizing}
-                      className="w-full py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-blue-300"
-                    >
-                      {isResizing ? 'Processing...' : 'Resize Image'}
-                    </button>
-                  </CardFooter>
-                </Card>
-              )}
-
-              {/* Download Card */}
-              {resizedFile && (
-                <Card className="w-full mb-8 p-6 rounded-2xl shadow-[0px_4px_6px_-1px_#0000001a,0px_2px_4px_-2px_#0000001a]">
-                  <CardHeader className="p-0 pb-4">
-                    <CardTitle className="text-xl font-semibold text-gray-800 [font-family:'Roboto',Helvetica] leading-7">
-                      Download Resized Image
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="p-0">
-                    <p className="text-sm text-gray-600 mb-4">
-                      Your image has been successfully resized. Click the button below to download it.
-                    </p>
-                  </CardContent>
-                  <CardFooter className="p-0 pt-4">
-                    <button
-                      onClick={handleDownload}
-                      className="w-full py-2 px-4 bg-green-500 text-white rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
-                    >
-                      Download Resized Image
-                    </button>
-                  </CardFooter>
-                </Card>
-              )}
-            </div>
-          </div>
+          {/* Download Card */}
+          {resizedFile && (
+            <Card className="w-full mb-6 bg-white border-0 rounded-xl card-shadow overflow-hidden">
+              <CardHeader className="pb-2 pt-5 px-6">
+                <CardTitle className="text-lg font-poppins text-gray-800">
+                  Download
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="px-6 pb-3">
+                <p className="text-sm text-gray-600 mb-4">
+                  Your image has been successfully resized and is ready for download.
+                </p>
+              </CardContent>
+              <CardFooter className="px-6 pb-5 pt-0">
+                <button
+                  onClick={handleDownload}
+                  className="w-full py-2 px-4 bg-green-500 text-white rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors font-medium text-sm flex items-center justify-center"
+                >
+                  <svg className="w-4 h-4 mr-2" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                  </svg>
+                  Download Resized Image
+                </button>
+              </CardFooter>
+            </Card>
+          )}
         </div>
       </main>
 
       {/* Footer */}
-      <footer className="w-full mt-auto pt-[25px] pb-6 bg-white border-t border-[#e4e7eb]">
-        <div className="px-4 md:px-20">
-          <div className="max-w-screen-xl w-full mx-auto px-4">
-            <div className="pb-2">
-              <div className="flex justify-center items-center">
-                <h2 className="text-xl leading-7 [font-family:'Pacifico',Helvetica] font-normal text-[#3b81f5] text-center tracking-[0]">
-                  PixForge
-                </h2>
-              </div>
-            </div>
-            <div className="flex justify-center items-center">
-              <p className="text-sm font-normal text-[#6a7280] [font-family:'Roboto',Helvetica] text-center leading-5">
-                © 2025 PixForge. All rights reserved.
-              </p>
-            </div>
+      <footer className="w-full py-4 bg-white border-t border-gray-100">
+        <div className="max-w-screen-xl w-full mx-auto px-4">
+          <div className="flex flex-col items-center justify-center">
+            <h2 className="text-xl font-montserrat font-semibold app-title mb-1">
+              PixForge
+            </h2>
+            <p className="text-xs text-gray-500">
+              © {new Date().getFullYear()} PixForge. All rights reserved.
+            </p>
           </div>
         </div>
       </footer>
