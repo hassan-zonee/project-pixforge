@@ -53,6 +53,10 @@ export const PixForgeHome = (): JSX.Element => {
   const [aspectRatio, setAspectRatio] = useState<number>(1);
   const [maintainAspectRatio, setMaintainAspectRatio] = useState<boolean>(true);
 
+  // State for original dimensions
+  const [originalWidth, setOriginalWidth] = useState<number>(0);
+  const [originalHeight, setOriginalHeight] = useState<number>(0);
+
   // File input ref
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -124,6 +128,7 @@ export const PixForgeHome = (): JSX.Element => {
       if (preview) {
         const img = document.createElement('img');
         img.onload = () => {
+          console.log(`Original dimensions: ${img.width}x${img.height}`);
           // Set the width and height to the original image dimensions
           setWidth(img.width);
           setHeight(img.height);
@@ -138,6 +143,12 @@ export const PixForgeHome = (): JSX.Element => {
       setIsUploading(false);
     }
   }, [preview]);
+
+  // Reset dimensions to original
+  const resetDimensions = useCallback(() => {
+    setWidth(originalWidth);
+    setHeight(originalHeight);
+  }, [originalWidth, originalHeight]);
 
   // Handle file selection
   const handleFileSelect = useCallback((selectedFile: File) => {
@@ -163,10 +174,23 @@ export const PixForgeHome = (): JSX.Element => {
     
     setFile(selectedFile);
     
-    // Generate preview
+    // Generate preview and set dimensions
     const reader = new FileReader();
     reader.onload = (e) => {
-      setPreview(e.target?.result as string);
+      const previewUrl = e.target?.result as string;
+      setPreview(previewUrl);
+      
+      // Set original dimensions
+      const img = document.createElement('img');
+      img.onload = () => {
+        console.log(`Original dimensions: ${img.width}x${img.height}`);
+        setWidth(img.width);
+        setHeight(img.height);
+        setOriginalWidth(img.width);
+        setOriginalHeight(img.height);
+        setAspectRatio(img.width / img.height);
+      };
+      img.src = previewUrl;
     };
     reader.readAsDataURL(selectedFile);
     
@@ -478,17 +502,32 @@ export const PixForgeHome = (): JSX.Element => {
                   {/* Resize Controls */}
                   {resizeType === 'ratio' ? (
                     <div className="mb-6">
-                      <div className="flex items-center mb-3">
-                        <input
-                          type="checkbox"
-                          id="maintainAspectRatio"
-                          checked={maintainAspectRatio}
-                          onChange={(e) => setMaintainAspectRatio(e.target.checked)}
-                          className="mr-2 h-4 w-4 text-blue-500 focus:ring-blue-500 border-gray-300 rounded"
-                        />
-                        <label htmlFor="maintainAspectRatio" className="text-sm text-gray-700">
-                          Maintain aspect ratio
-                        </label>
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center">
+                          <input
+                            type="checkbox"
+                            id="maintainAspectRatio"
+                            checked={maintainAspectRatio}
+                            onChange={(e) => setMaintainAspectRatio(e.target.checked)}
+                            className="mr-2 h-4 w-4 text-blue-500 focus:ring-blue-500 border-gray-300 rounded"
+                          />
+                          <label htmlFor="maintainAspectRatio" className="text-sm text-gray-700">
+                            Maintain aspect ratio
+                          </label>
+                        </div>
+                        <button
+                          onClick={resetDimensions}
+                          className="text-xs text-blue-500 hover:text-blue-700 flex items-center"
+                          type="button"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                          </svg>
+                          Reset to original
+                        </button>
+                      </div>
+                      <div className="text-xs text-gray-500 mb-3">
+                        Original dimensions: {originalWidth} × {originalHeight} px
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
