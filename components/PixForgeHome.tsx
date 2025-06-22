@@ -622,31 +622,7 @@ export const PixForgeHome = (): JSX.Element => {
             </Card>
           )}
 
-          {/* SEO Content */}
-          <div className="mt-12 prose prose-sm max-w-none">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">About Our Free Image Resizer Tool</h2>
-            <p className="text-gray-600">
-              PixForge offers a powerful, free online image resizer that uses OpenCV technology for high-quality image resizing. 
-              Whether you need to resize images for social media, websites, or print, our tool makes it quick and easy.
-            </p>
-            
-            <h3 className="text-lg font-semibold text-gray-800 mt-6 mb-2">Key Features</h3>
-            <ul className="list-disc pl-5 text-gray-600">
-              <li><strong>OpenCV-Powered:</strong> Professional-grade image processing for the best quality results</li>
-              <li><strong>Multiple Formats:</strong> Support for JPG, PNG, and WebP images</li>
-              <li><strong>Custom Dimensions:</strong> Resize to exact pixel dimensions or by percentage</li>
-              <li><strong>Real-time Preview:</strong> See your resized image before downloading</li>
-              <li><strong>Free to Use:</strong> No registration, no watermarks, no limits</li>
-              <li><strong>Privacy-Focused:</strong> Your images are automatically deleted after processing</li>
-            </ul>
-            
-            <h3 className="text-lg font-semibold text-gray-800 mt-6 mb-2">Why Resize Images?</h3>
-            <p className="text-gray-600">
-              Resizing images is essential for optimizing website performance, meeting social media platform requirements, 
-              reducing file sizes for email attachments, or preparing images for print. Our tool helps you achieve the 
-              perfect dimensions without losing image quality.
-            </p>
-          </div>
+          
         </div>
       </main>
 
