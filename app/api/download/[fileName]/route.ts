@@ -49,6 +49,25 @@ export async function GET(
     headers.set('Content-Type', contentType);
     headers.set('Content-Disposition', `attachment; filename="${fileName}"`);
     
+    // Schedule cleanup of this file after download
+    // We use setTimeout to avoid blocking the response
+    setTimeout(async () => {
+      try {
+        await fetch(`${request.nextUrl.origin}/api/cleanup`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            resizedFile: fileName
+          }),
+        });
+        console.log(`Scheduled cleanup of downloaded file: ${fileName}`);
+      } catch (error) {
+        console.error('Failed to schedule cleanup after download:', error);
+      }
+    }, 5000); // 5 seconds delay
+    
     // Return the file as a download
     return new NextResponse(fileBuffer, {
       status: 200,

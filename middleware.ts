@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server';
 
 // Store the last cleanup time
 let lastCleanupTime = Date.now();
-const CLEANUP_INTERVAL = 5 * 60 * 1000; // 5 minutes
+const CLEANUP_INTERVAL = 2 * 60 * 1000; // 2 minutes (reduced from 5 minutes)
 
 export async function middleware(request: NextRequest) {
   // Check if it's time to clean up
