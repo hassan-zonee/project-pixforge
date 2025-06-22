@@ -17,13 +17,15 @@ type UploadedFile = {
   fileName: string;
   originalName: string;
   fileType: string;
-  filePath: string;
+  fileData: ArrayBuffer | string;
 };
 
 type ResizedFile = {
   resizedFileName: string;
   originalName: string;
-  resizedPath: string;
+  resizedData: string;
+  width: number;
+  height: number;
 };
 
 type ResizeType = "ratio" | "percentage";
@@ -227,7 +229,7 @@ export const PixForgeHome = (): JSX.Element => {
 
   // Resize the image
   const handleResize = useCallback(async () => {
-    if (!uploadedFile) return;
+    if (!uploadedFile || !preview) return;
     
     setIsResizing(true);
     setError(null);
@@ -235,6 +237,8 @@ export const PixForgeHome = (): JSX.Element => {
     try {
       const requestData = {
         fileName: uploadedFile.fileName,
+        fileData: preview,
+        fileType: uploadedFile.fileType,
         resizeType,
         width: width,
         height: height,
@@ -257,27 +261,27 @@ export const PixForgeHome = (): JSX.Element => {
       const data = await response.json();
       setResizedFile(data);
       
-      // Load the resized image preview
-      setResizedPreview(`/resized/${data.resizedFileName}?t=${Date.now()}`);
+      // Set the resized image preview directly from the response data
+      setResizedPreview(data.resizedData);
     } catch (err: any) {
       setError(err.message || 'Failed to resize image');
     } finally {
       setIsResizing(false);
     }
-  }, [uploadedFile, resizeType, width, height, percentage]);
+  }, [uploadedFile, preview, resizeType, width, height, percentage]);
 
   // Handle download
   const handleDownload = useCallback(() => {
-    if (!resizedFile) return;
+    if (!resizedFile || !resizedPreview) return;
     
-    // Create a link and trigger download
+    // Create a temporary link for download
     const link = document.createElement('a');
-    link.href = `/api/download/${resizedFile.resizedFileName}`;
-    link.download = resizedFile.resizedFileName;
+    link.href = resizedPreview;
+    link.download = `resized_${resizedFile.originalName}`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-  }, [resizedFile]);
+  }, [resizedFile, resizedPreview]);
 
   return (
     <div className="flex flex-col min-h-screen bg-white">

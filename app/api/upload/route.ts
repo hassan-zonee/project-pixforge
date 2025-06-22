@@ -1,23 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { writeFile, mkdir } from 'fs/promises';
-import { existsSync } from 'fs';
 import { v4 as uuidv4 } from 'uuid';
 import path from 'path';
 
-// Set up the upload directory
-const uploadDir = path.join(process.cwd(), 'uploads');
-
-// Ensure upload directory exists
-async function ensureUploadDir() {
-  if (!existsSync(uploadDir)) {
-    await mkdir(uploadDir, { recursive: true });
-  }
-}
+// Define runtime environment for Vercel Edge
+export const runtime = 'edge';
 
 export async function POST(request: NextRequest) {
   try {
-    await ensureUploadDir();
-    
     const formData = await request.formData();
     const file = formData.get('file') as File;
     
@@ -49,21 +38,30 @@ export async function POST(request: NextRequest) {
     const fileId = uuidv4();
     const fileExtension = file.name.split('.').pop();
     const fileName = `${fileId}.${fileExtension}`;
-    const filePath = path.join(uploadDir, fileName);
     
-    // Save the file
-    const buffer = Buffer.from(await file.arrayBuffer());
-    await writeFile(filePath, buffer);
+    // Store file in memory
+    const buffer = await file.arrayBuffer();
     
-    // Return the file details
-    return NextResponse.json({
+    // Create a response with the file data in memory
+    const response = NextResponse.json({
       success: true,
       fileId,
       fileName,
       originalName: file.name,
       fileType: file.type,
-      filePath: `/uploads/${fileName}`,
+      fileData: buffer,
     });
+    
+    // Store the file data in the response headers for later use
+    // We'll use a cookie to track the uploaded file
+    response.cookies.set(`file_${fileId}`, fileName, {
+      path: '/',
+      maxAge: 3600, // 1 hour expiry
+      httpOnly: true,
+      sameSite: 'strict',
+    });
+    
+    return response;
   } catch (error) {
     console.error('Error uploading file:', error);
     return NextResponse.json(

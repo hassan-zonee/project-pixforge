@@ -1,112 +1,51 @@
 import { NextRequest, NextResponse } from 'next/server';
 import sharp from 'sharp';
-import path from 'path';
-import { writeFile, mkdir, readFile } from 'fs/promises';
-import { existsSync } from 'fs';
 import { v4 as uuidv4 } from 'uuid';
-import cv from 'opencv.js';
 
-// Set up the directories
-const uploadDir = path.join(process.cwd(), 'uploads');
-const resizedDir = path.join(process.cwd(), 'resized');
-
-// Ensure directories exist
-async function ensureDirectories() {
-  if (!existsSync(uploadDir)) {
-    await mkdir(uploadDir, { recursive: true });
-  }
-  if (!existsSync(resizedDir)) {
-    await mkdir(resizedDir, { recursive: true });
-  }
-}
-
-// Function to resize image with OpenCV
-async function resizeImageWithOpenCV(
-  inputPath: string, 
-  outputPath: string, 
-  newWidth: number, 
-  newHeight: number
-): Promise<void> {
-  try {
-    // Read the image file
-    const imageBuffer = await readFile(inputPath);
-    
-    // Convert buffer to Uint8Array for OpenCV
-    const imageArray = new Uint8Array(imageBuffer);
-    
-    // Read image with OpenCV
-    const mat = cv.imdecode(imageArray, cv.IMREAD_UNCHANGED);
-    
-    // Create destination matrix
-    const dst = new cv.Mat();
-    
-    // Resize the image
-    const dsize = new cv.Size(newWidth, newHeight);
-    cv.resize(mat, dst, dsize, 0, 0, cv.INTER_AREA);
-    
-    // Encode the resized image
-    const encodedImage = cv.imencode('.jpg', dst);
-    
-    // Write the resized image to file
-    await writeFile(outputPath, Buffer.from(encodedImage));
-    
-    // Free memory
-    mat.delete();
-    dst.delete();
-  } catch (error) {
-    console.error('Error resizing with OpenCV:', error);
-    throw error;
-  }
-}
-
-// Fallback to Sharp if OpenCV fails
-async function resizeImageWithSharp(
-  inputPath: string, 
-  outputPath: string, 
-  newWidth: number, 
-  newHeight: number
-): Promise<void> {
-  try {
-    await sharp(inputPath)
-      .resize({
-        width: newWidth,
-        height: newHeight,
-        fit: 'fill'
-      })
-      .toFile(outputPath);
-  } catch (error) {
-    console.error('Error resizing with Sharp:', error);
-    throw error;
-  }
-}
+// Define runtime environment for Vercel Edge
+export const runtime = 'edge';
 
 export async function POST(request: NextRequest) {
   try {
-    await ensureDirectories();
-    
     const data = await request.json();
-    const { fileName, resizeType, width, height, percentage } = data;
+    const { fileName, fileData, resizeType, width, height, percentage, fileType } = data;
     
-    if (!fileName) {
+    if (!fileName || !fileData) {
       return NextResponse.json(
-        { error: 'No file specified' },
+        { error: 'No file data provided' },
         { status: 400 }
-      );
-    }
-    
-    const filePath = path.join(uploadDir, fileName);
-    if (!existsSync(filePath)) {
-      return NextResponse.json(
-        { error: 'File not found' },
-        { status: 404 }
       );
     }
     
     // Get the file extension
     const fileExtension = fileName.split('.').pop();
     
-    // Get original image metadata
-    const metadata = await sharp(filePath).metadata();
+    // Convert base64 to buffer if needed
+    let imageBuffer;
+    if (typeof fileData === 'string' && fileData.startsWith('data:')) {
+      // Handle base64 data URL
+      const base64Data = fileData.split(',')[1];
+      imageBuffer = Buffer.from(base64Data, 'base64');
+    } else if (typeof fileData === 'string') {
+      // Handle plain base64
+      imageBuffer = Buffer.from(fileData, 'base64');
+    } else if (fileData instanceof ArrayBuffer) {
+      // Handle ArrayBuffer
+      imageBuffer = Buffer.from(new Uint8Array(fileData));
+    } else if (ArrayBuffer.isView(fileData)) {
+      // Handle TypedArray
+      imageBuffer = Buffer.from(fileData as Uint8Array);
+    } else {
+      return NextResponse.json(
+        { error: 'Invalid file data format' },
+        { status: 400 }
+      );
+    }
+    
+    // Process with sharp
+    const image = sharp(imageBuffer);
+    const metadata = await image.metadata();
+    
     const originalWidth = metadata.width;
     const originalHeight = metadata.height;
     
@@ -147,27 +86,30 @@ export async function POST(request: NextRequest) {
       );
     }
     
+    // Resize the image
+    const resizedImageBuffer = await image
+      .resize({
+        width: newWidth,
+        height: newHeight,
+        fit: 'fill'
+      })
+      .toBuffer();
+    
     // Generate a unique filename for the resized image
     const resizedId = uuidv4();
     const resizedFileName = `${resizedId}.${fileExtension}`;
-    const resizedFilePath = path.join(resizedDir, resizedFileName);
     
-    // Try to resize with OpenCV first, fallback to Sharp if it fails
-    try {
-      await resizeImageWithOpenCV(filePath, resizedFilePath, newWidth, newHeight);
-      console.log('Image resized with OpenCV');
-    } catch (error) {
-      console.warn('OpenCV resize failed, falling back to Sharp:', error);
-      await resizeImageWithSharp(filePath, resizedFilePath, newWidth, newHeight);
-      console.log('Image resized with Sharp (fallback)');
-    }
+    // Convert buffer to base64 for response
+    const resizedBase64 = `data:${fileType || 'image/jpeg'};base64,${resizedImageBuffer.toString('base64')}`;
     
     // Return the resized file details
     return NextResponse.json({
       success: true,
       resizedFileName,
       originalName: fileName,
-      resizedPath: `/resized/${resizedFileName}`,
+      resizedData: resizedBase64,
+      width: newWidth,
+      height: newHeight
     });
   } catch (error) {
     console.error('Error resizing image:', error);
