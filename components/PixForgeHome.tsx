@@ -504,7 +504,7 @@ export const PixForgeHome = (): JSX.Element => {
                   disabled={isResizing}
                   className="w-full py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-blue-300 transition-colors font-medium text-sm"
                 >
-                  {isResizing ? 'Processing...' : 'Resize Image with OpenCV'}
+                  {isResizing ? 'Processing...' : 'Resize Image'}
                 </button>
               </CardFooter>
             </Card>
