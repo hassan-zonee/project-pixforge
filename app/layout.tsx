@@ -16,6 +16,7 @@ const montserrat = Montserrat({
 })
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://pixforge.vercel.app'),
   title: 'PixForge - Free Online Image Resizer | Resize Images Easily',
   description: 'Free online image resizer tool. Resize your JPG, PNG, and WebP images easily with custom dimensions or percentage scaling. No signup required, instant download.',
   keywords: 'image resizer, resize image, image resizer online, free image resizer, resize photos, image size converter, online image resizer, resize pictures, photo resizer, resize image online free',
@@ -25,7 +26,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: 'https://pixforge.com',
+    url: 'https://pixforge.vercel.app',
     title: 'PixForge - Free Online Image Resizer | Resize Images Easily',
     description: 'Free online image resizer tool. Resize your JPG, PNG, and WebP images easily with custom dimensions or percentage scaling. No signup required, instant download.',
     siteName: 'PixForge',
@@ -45,7 +46,7 @@ export const metadata: Metadata = {
     images: ['/twitter-image.jpg'],
   },
   alternates: {
-    canonical: 'https://pixforge.com',
+    canonical: 'https://pixforge.vercel.app',
   },
   robots: {
     index: true,

@@ -37,7 +37,7 @@ export const OpenCVProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       <Script
         src="https://docs.opencv.org/4.7.0/opencv.js"
         onLoad={handleOpenCVLoad}
-        strategy="beforeInteractive"
+        strategy="afterInteractive"
       />
       {children}
     </OpenCVContext.Provider>

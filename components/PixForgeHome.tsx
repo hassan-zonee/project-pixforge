@@ -96,71 +96,6 @@ export const PixForgeHome = (): JSX.Element => {
     };
   }, [uploadedFile, resizedFile]);
 
-  // Handle file selection
-  const handleFileSelect = useCallback((selectedFile: File) => {
-    // Reset states
-    setError(null);
-    setUploadedFile(null);
-    setResizedFile(null);
-    setResizedPreview(null);
-    setClientResizedPreview(null);
-    
-    // Validate file type
-    const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
-    if (!validTypes.includes(selectedFile.type)) {
-      setError('Invalid file type. Only JPG, PNG, and WebP are supported');
-      return;
-    }
-    
-    // Validate file size (max 10MB)
-    if (selectedFile.size > 10 * 1024 * 1024) {
-      setError('File size exceeds 10MB limit');
-      return;
-    }
-    
-    setFile(selectedFile);
-    
-    // Generate preview
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      setPreview(e.target?.result as string);
-    };
-    reader.readAsDataURL(selectedFile);
-    
-    // Upload the file
-    handleUpload(selectedFile);
-  }, []);
-
-  // Handle drag and drop
-  const handleDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      handleFileSelect(e.dataTransfer.files[0]);
-    }
-  }, [handleFileSelect]);
-
-  // Handle drag events
-  const handleDragOver = useCallback((e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-  }, []);
-
-  // Handle file input change
-  const handleFileInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      handleFileSelect(e.target.files[0]);
-    }
-  }, [handleFileSelect]);
-
-  // Handle click on upload area
-  const handleUploadClick = useCallback(() => {
-    if (fileInputRef.current) {
-      fileInputRef.current.click();
-    }
-  }, []);
-
   // Upload file to server
   const handleUpload = useCallback(async (fileToUpload: File) => {
     setIsUploading(true);
@@ -201,6 +136,71 @@ export const PixForgeHome = (): JSX.Element => {
       setIsUploading(false);
     }
   }, [preview]);
+
+  // Handle file selection
+  const handleFileSelect = useCallback((selectedFile: File) => {
+    // Reset states
+    setError(null);
+    setUploadedFile(null);
+    setResizedFile(null);
+    setResizedPreview(null);
+    setClientResizedPreview(null);
+    
+    // Validate file type
+    const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    if (!validTypes.includes(selectedFile.type)) {
+      setError('Invalid file type. Only JPG, PNG, and WebP are supported');
+      return;
+    }
+    
+    // Validate file size (max 10MB)
+    if (selectedFile.size > 10 * 1024 * 1024) {
+      setError('File size exceeds 10MB limit');
+      return;
+    }
+    
+    setFile(selectedFile);
+    
+    // Generate preview
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setPreview(e.target?.result as string);
+    };
+    reader.readAsDataURL(selectedFile);
+    
+    // Upload the file
+    handleUpload(selectedFile);
+  }, [handleUpload]);
+
+  // Handle drag and drop
+  const handleDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      handleFileSelect(e.dataTransfer.files[0]);
+    }
+  }, [handleFileSelect]);
+
+  // Handle drag events
+  const handleDragOver = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+  }, []);
+
+  // Handle file input change
+  const handleFileInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      handleFileSelect(e.target.files[0]);
+    }
+  }, [handleFileSelect]);
+
+  // Handle click on upload area
+  const handleUploadClick = useCallback(() => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  }, []);
 
   // Handle width change with aspect ratio maintenance
   const handleWidthChange = useCallback((newWidth: number) => {
